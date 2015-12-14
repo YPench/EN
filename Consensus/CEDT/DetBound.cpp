@@ -24,13 +24,9 @@
 #include "CEDT.h"
 
 extern int FEEDBACK_CASES_NUM;
-extern int GREEDY_MATCH_NUM;
-
 extern double FEEDBACE_PRO_LIMIT;
 extern int CAND_FEEDBACK_NUM;
 extern int BOARD_n_GRAM_NUM;
-extern int INTERNAL_WORDS_NUM;
-extern int BOARD_POS_NUM;
 
 extern bool CEDT_Head_Flag;
 extern bool CEDT_Detection_Flag;
@@ -54,9 +50,9 @@ void CDetBound::START_or_END_Boundary_Detection_Port(bool START_Flag, const char
 		Gen_END_Boundary_Cases(inputstr, BoundCase_v, SENID);
 	}
 	FeatureVctor Training_v;
-	Generate_START_or_END_Cases_Feature(START_Flag, BoundCase_v, Training_v);
+	pCCEDT->m_CNEFeator.Generate_START_or_END_Cases_Feature(START_Flag, BoundCase_v, Training_v);
 
-	NECOM::Init_START_or_END_Rtn_map_with_Erasing(BoundCase_v, boundout_m);
+	Init_START_or_END_Rtn_map_with_Erasing(BoundCase_v, boundout_m);
 	
 	MAXEN::Boundary_Detection_with_eval_Erasing(Training_v, pm_maxent, boundout_m);
 }
@@ -128,7 +124,7 @@ void CDetBound::Training_START_or_END_Boundary(bool START_Flag, vector<NE_Surrou
 	Training_v.reserve(RESERVED_NUM);
 	
 	AppCall::Maxen_Responce_Message("Generate Boundary Cases Features vectors...\n");
-	Generate_START_or_END_Cases_Feature(START_Flag, BoundCase_v, Training_v);
+	pCCEDT->m_CNEFeator.Generate_START_or_END_Cases_Feature(START_Flag, BoundCase_v, Training_v);
 	
 	AppCall::Maxen_Responce_Message("Training...\n");
 
@@ -136,7 +132,7 @@ void CDetBound::Training_START_or_END_Boundary(bool START_Flag, vector<NE_Surrou
 	map<size_t, map<size_t, double>*>& rtnSTART_mm = CEDT_Head_Flag?pmTrainingCEDTInfo.Head_START_mm:pmTrainingCEDTInfo.Extend_START_mm;
 	map<size_t, map<size_t, double>*>& rtnEND_mm = CEDT_Head_Flag?pmTrainingCEDTInfo.Head_END_mm:pmTrainingCEDTInfo.Extend_END_mm;
 	
-	NECOM::Init_START_or_END_Rtn_map_with_Erasing(BoundCase_v, START_Flag?rtnSTART_mm:rtnEND_mm);
+	Init_START_or_END_Rtn_map_with_Erasing(BoundCase_v, START_Flag?rtnSTART_mm:rtnEND_mm);
 	
 	MAXEN::Boundary_Training_without_Erasing(Training_v, pm_maxent, pCCEDT->m_BoundIte);
 
@@ -167,31 +163,18 @@ void CDetBound::Testing_START_or_END_Boundary(bool START_Flag, vector<NE_Surroun
 	FeatureVctor Testing_v;
 	Testing_v.reserve(RESERVED_NUM);
 	//----------------------
-	Generate_START_or_END_Cases_Feature(START_Flag, BoundCase_v, Testing_v);
+	pCCEDT->m_CNEFeator.Generate_START_or_END_Cases_Feature(START_Flag, BoundCase_v, Testing_v);
 
 	map<size_t, map<size_t, double>*>& rtnSTART_mm = CEDT_Head_Flag?pmTestingCEDTInfo.Head_START_mm:pmTestingCEDTInfo.Extend_START_mm;
 	map<size_t, map<size_t, double>*>& rtnEND_mm = CEDT_Head_Flag?pmTestingCEDTInfo.Head_END_mm:pmTestingCEDTInfo.Extend_END_mm;
 
-	NECOM::Init_START_or_END_Rtn_map_with_Erasing(BoundCase_v, START_Flag?rtnSTART_mm:rtnEND_mm);
+	Init_START_or_END_Rtn_map_with_Erasing(BoundCase_v, START_Flag?rtnSTART_mm:rtnEND_mm);
 
 	MAXEN::Boundary_Testing_with_eval_Erasing(Testing_v, pm_maxent, START_Flag?rtnSTART_mm:rtnEND_mm, true);
 
 	Testing_v.clear();
 }
 
-void CDetBound::Generate_START_or_END_Cases_Feature(bool START_Flag, vector<BoundCase*>& START_BoundCase_v, FeatureVctor& Training_v)
-{
-	for(size_t i = 0; i < START_BoundCase_v.size(); i++){
-		vector<string> adjacent_feature_v;
-		
-		BoundCase& loc_BoundCase = *START_BoundCase_v[i];
-
-		pCCEDT->m_CNEFeator.Extract_Feature_Vector_of_Boundary(loc_BoundCase, adjacent_feature_v, START_Flag, CEDT_Head_Flag?"_Hd":"_Exd");
-
-		MAXEN::Push_Back_FeatureCase_v_from_Feature_v_with_Check(Training_v, adjacent_feature_v, loc_BoundCase.Bound_Falg?POSITIVE:NEGETIVE);
-		
-	}
-}
 
 //========================================
 void CDetBound::Gen_START_Boundary_Cases(vector<NE_Surround*>& Surround_v, vector<BoundCase*>& START_BoundCase_v)
@@ -334,6 +317,29 @@ void CDetBound::Gen_END_Boundary_Cases(const char* inputchar, vector<BoundCase*>
 }
 
 
+void CDetBound::Init_START_or_END_Rtn_map_with_Erasing(vector<BoundCase*>& BoundCase_v, map<size_t, map<size_t, double>*>& rtn_mm)
+{
+	if(!rtn_mm.empty()){
+		for(map<size_t, map<size_t, double>*>::iterator mmite = rtn_mm.begin(); mmite != rtn_mm.end(); mmite++){
+			delete mmite->second;
+		}
+		rtn_mm.clear();
+	}
+	for(vector<BoundCase*>::iterator vite = BoundCase_v.begin(); vite != BoundCase_v.end(); vite++){
+		if(rtn_mm.find((*vite)->SENID) == rtn_mm.end()){
+			rtn_mm[(*vite)->SENID];
+			rtn_mm[(*vite)->SENID] = new map<size_t, double>;
+		}
+		if(rtn_mm[(*vite)->SENID]->find((*vite)->position) == rtn_mm[(*vite)->SENID]->end()){
+			rtn_mm[(*vite)->SENID]->insert(make_pair((*vite)->position, 0));
+		}
+		else{
+			AppCall::Secretary_Message_Box("Duplicated information, in Init_START_or_END_Rtn_map_with_Erasing()", MB_OK);
+		}
+		delete *vite;
+	}
+	BoundCase_v.clear();
+}
 
 
 

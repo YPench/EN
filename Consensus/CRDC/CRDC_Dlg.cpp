@@ -49,7 +49,6 @@ CCRDC_Dlg::CCRDC_Dlg(CWnd* pParent /*=NULL*/)
 	, m_nGross(5)
 	//, m_CParsere(m_CSegmter)
 {
-	For_English_Relation_Flag = TRUE;
 	CRDC_Busy_Flag = false;
 	Generate_Relation_Flag = false;
 	Generate_Training_Flag = false;
@@ -57,8 +56,6 @@ CCRDC_Dlg::CCRDC_Dlg(CWnd* pParent /*=NULL*/)
 	Training_Model_Flag = false;
 	Loading_Model_Flag = false;
 	Relation_Recognition_Flag = false;
-	Collecting_Model_Parameter_Flag = false;
-	Output_Feature_For_SVM_Flag = false;
 
 	CRDC_Data_Floder = DATA_FOLDER;
 	CRDC_Data_Floder += "CRDC\\";
@@ -75,8 +72,6 @@ CCRDC_Dlg::CCRDC_Dlg(CWnd* pParent /*=NULL*/)
 
 	//ACECorpusFolder = p_CParentDlg->ACECorpusFolder;
 	//Enable_Usable_Button_CRDC();
-
-	m_CRDC.For_English_Relation_Flag = For_English_Relation_Flag;
 }
 
 CCRDC_Dlg::~CCRDC_Dlg()
@@ -133,8 +128,6 @@ BEGIN_MESSAGE_MAP(CCRDC_Dlg, CDialog)
 	ON_BN_CLICKED(IDC_CRDC_TRAININT, &CCRDC_Dlg::OnBnClickedCrdcTrainint)
 	ON_BN_CLICKED(IDC_CRDC_DEL, &CCRDC_Dlg::OnBnClickedCrdcDel)
 	ON_BN_CLICKED(IDC_CRDC_RUN, &CCRDC_Dlg::OnBnClickedCrdcRun)
-	ON_BN_CLICKED(IDC_CRDC_COLLECT_PAR, &CCRDC_Dlg::OnBnClickedCrdcCollectPar)
-	ON_BN_CLICKED(IDC_CRDC_OUTPUT_SVM, &CCRDC_Dlg::OnBnClickedCrdcOutputSvm)
 END_MESSAGE_MAP()
 
 
@@ -190,89 +183,7 @@ BOOL CCRDC_Dlg::PreTranslateMessage(MSG* pMsg)
 
 	return CDialog::PreTranslateMessage(pMsg);
 }
-// CCRDC_Dlg message handlers
-void CCRDC_Dlg::Output_ACE_for_YQWL(string savepath, ACE_Corpus& m_ACE_Corpus)
-{
-	//char intchar[64];
-	//_itoa_s(FrequentPatternLength - 1,intchar,64,10);
 
-	wchar_t UnicodeChar[65535];
-	char UTF8Char[65535];
-
-	CTime loc_Time = CTime::GetCurrentTime();
-
-	map<string, ACE_sgm>& ACE_sgm_mmap = m_ACE_Corpus.ACE_sgm_mmap;
-	
-	for(map<string, ACE_sgm>::iterator mite = ACE_sgm_mmap.begin(); mite != ACE_sgm_mmap.end(); mite++){
-		string DocIDs = mite->first;
-		DocIDs = DocIDs.substr(0, DocIDs.rfind('.'));
-		DocIDs = DocIDs.substr(0, DocIDs.rfind('.'));
-		DocIDs = DocIDs.substr(0, DocIDs.rfind('.'));
-		if(DocIDs.length() < 8){
-			AppCall::Secretary_Message_Box("Data Error: CCRDC_Dlg::Output_ACE_for_YQWL");
-		}
-		string year = DocIDs.substr(DocIDs.length()-8, 4);
-		string month = DocIDs.substr(DocIDs.length()-4, 2);
-		string day = DocIDs.substr(DocIDs.length()-2, 2);
-		istringstream Yinstream(year);
-		int Int_Year;
-		Yinstream >> Int_Year;
-		Int_Year += 13;
-		if(Int_Year > 2014){
-			Int_Year = 2014;
-		}
-		istringstream Minstream(month);
-		int Int_Month;
-		Minstream >> Int_Month;
-		istringstream Dinstream(day);
-		int Int_Day;
-		Dinstream >> Int_Day;
-
-		string oTexts;
-		string& TEXT = mite->second.TEXT;
-		for(size_t i = 0; i < TEXT.length(); i++){
-			if('\n' == TEXT.c_str()[i]){
-				continue;
-			}
-			if('\r' == TEXT.c_str()[i]){
-				continue;
-			}
-			if(32 == TEXT.c_str()[i]){
-				continue;
-			}
-			oTexts += TEXT.c_str()[i];
-		}
-		string filepath = savepath;
-		filepath += mite->first.c_str();
-		filepath += ".txt";
-		ofstream out(filepath.c_str());
-		if(out.bad())
-			return;
-		out.clear();
-		out.seekp(0, ios::beg);
-		out << 1 << endl;
-		out << 5 << endl;
-		out << "" << endl;//title
-		out << Int_Year << ":" << Int_Month << ":" << Int_Day << endl;
-		out << "" << endl; //url
-		out << loc_Time.GetYear() << ":" << loc_Time.GetMonth() << ":" << loc_Time.GetDay() << endl;//createdtime
-		
-		SCONVERT::AnsiToUnicode(oTexts.c_str(), UnicodeChar);
-		SCONVERT::UnicodeToUTF8(UnicodeChar, UTF8Char);
-
-		out << UTF8Char << endl;//content;
-		out << "" << endl;//author
-		out << "" << endl;//views
-		out << "" << endl;//comments
-		out << "" << endl;//forwards
-		out << "" << endl;//sourcename
-		out << "" << endl;//sourceurl
-		out << "Chinese" << endl;//Chinese
-		out << "" << endl;//sourceplace
-		out.close();
-	}
-
-}
 
 DWORD WINAPI CRDC_Implement_Threaad(LPVOID pParam)
 {
@@ -280,8 +191,6 @@ DWORD WINAPI CRDC_Implement_Threaad(LPVOID pParam)
 	if(dlgRef.p_CParentDlg->XML_Parsing_Flag){
 		dlgRef.p_CParentDlg->m_SXMLer.Xercesc_ACE_Folder_Files_Filter(dlgRef.ACECorpusFolder, dlgRef.p_CParentDlg->m_ACE_Corpus);
 		dlgRef.p_CParentDlg->m_SXMLer.Xercesc_ACE_Folder_For_sgm_Files_Filter(dlgRef.ACECorpusFolder, dlgRef.p_CParentDlg->m_ACE_Corpus);
-		//YQWL
-		//dlgRef.Output_ACE_for_YQWL("F:\\YQ_Data\\", dlgRef.p_CParentDlg->m_ACE_Corpus);
 		dlgRef.p_CParentDlg->XML_Parsing_Flag = false;
 		dlgRef.p_CParentDlg->ACE_Coupus_Loaded_Flag = true;
 		dlgRef.p_CParentDlg->Output_MSG("\"XML Parse\" is complete...", 1);
@@ -309,22 +218,12 @@ DWORD WINAPI CRDC_Implement_Threaad(LPVOID pParam)
 	if(dlgRef.Relation_Recognition_Flag){
 		//dlgRef.m_CRDCInputEdit.SetWindowTextW(NLPOP::string2CString(dlgRef.m_CRDC.Relation_Recognition_Port()));
 	}
-	if(dlgRef.Collecting_Model_Parameter_Flag){
-		dlgRef.m_CRDC.Collecting_Model_Parameter_Port(dlgRef.RelationCasePath, dlgRef.TrainingCasePath, dlgRef.InfoPath);
-	}
-	if(dlgRef.Output_Feature_For_SVM_Flag){
-		dlgRef.m_CRDC.Output_Feature_For_SVM_Port();
-	}
-
 	dlgRef.Generate_Relation_Flag = false;
 	dlgRef.Generate_Training_Flag = false;
 	dlgRef.Start_Training_Flag = false;
 	dlgRef.Training_Model_Flag = false;
 	dlgRef.Loading_Model_Flag = false;
 	dlgRef.Relation_Recognition_Flag = false;
-	dlgRef.Collecting_Model_Parameter_Flag = false;
-	dlgRef.Output_Feature_For_SVM_Flag = false;
-
 	
 	dlgRef.CRDC_Busy_Flag = false;
 	dlgRef.Enable_Usable_Button_CRDC();
@@ -628,42 +527,4 @@ void CCRDC_Dlg::OnBnClickedCrdcRun()
 	CString Result_CS = NLPOP::string2CString(m_CRDC.Relation_Recognition_Port(Input_s.c_str(), Arg1_s.c_str(), Arg2_s.c_str()));
 
 	m_REdit_Output.SetWindowTextW(Result_CS);
-}
-
-void CCRDC_Dlg::OnBnClickedCrdcCollectPar()
-{
-	if(CRDC_Busy_Flag){
-		p_CParentDlg->Output_MSG("\"Start Training\" is not usable, please wait...", 1);
-		return;
-	}
-	CRDC_Busy_Flag = true;
-	UpdateData(TRUE);
-	Updata_CRDC_Configurations();
-	if((m_IterTime < 0) || (m_IterTime > 500)){
-		p_CParentDlg->Output_MSG("Iterative time is unreasonable", 1);
-		return;
-	}
-	p_CParentDlg->Output_MSG("Start Collecting Parameter, loading data..", 1);
-
-	Collecting_Model_Parameter_Flag  = true;
-	ImpThread = CreateThread(NULL, 0, CRDC_Implement_Threaad, (LPVOID)this, 0, &ImpphreadId);
-}
-
-void CCRDC_Dlg::OnBnClickedCrdcOutputSvm()
-{
-	if(CRDC_Busy_Flag){
-		p_CParentDlg->Output_MSG("\"Start Training\" is not usable, please wait...", 1);
-		return;
-	}
-	CRDC_Busy_Flag = true;
-	UpdateData(TRUE);
-	Updata_CRDC_Configurations();
-	if((m_IterTime < 0) || (m_IterTime > 500)){
-		p_CParentDlg->Output_MSG("Iterative time is unreasonable", 1);
-		return;
-	}
-	p_CParentDlg->Output_MSG("Start Output Feature For SVM, loading data..", 1);
-
-	Output_Feature_For_SVM_Flag  = true;
-	ImpThread = CreateThread(NULL, 0, CRDC_Implement_Threaad, (LPVOID)this, 0, &ImpphreadId);
 }

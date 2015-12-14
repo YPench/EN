@@ -21,7 +21,7 @@
 #include "RCCom.h"
 #include "CRDC.h"
 
-CGRIns::CGRIns(CSegmter& ref_Segmter): m_CSegmter(ref_Segmter)
+CGRIns::CGRIns()
 {	
 	
 }
@@ -50,10 +50,6 @@ void CGRIns::Generate_Positive_And_Negetive_ACE_Relation_Cases(string savepath, 
 	//Inplementing influence of negetive instance: 3 shoud annotate the follow
 	Adding_Positive_Training_Case_in_Relation_Mention(m_ACE_Corpus, totall_Case_l);
 	
-
-	if(pCRDC->Generate_ICTCLAS_LEXICAL_FLAG){
-		RCCOM::Generate_ICTCLAS_Lexicon(m_CSegmter, totall_Case_l);
-	}
 	if(pCRDC->CaseCheck_Flag){
 		for(list<Relation_Case>::iterator lite = totall_Case_l.begin(); lite != totall_Case_l.end(); lite++){
 			ace_op::Check_Relation_Cases(*lite);
@@ -67,10 +63,6 @@ void CGRIns::Generate_Positive_And_Negetive_ACE_Relation_Cases(string savepath, 
 		return;
 	}
 	ace_op::Output_Relation_Case(RelationCaseFilePath.c_str(), totall_Case_l);
-
-	string infopath = DATA_FOLDER;
-	infopath += "CRDC\\Info.dat";
-	RCCOM::Get_Relation_Case_Info(infopath.c_str(), totall_Case_l);
 }
 
 void CGRIns::Adding_Positive_Training_Case_in_Relation_Mention(ACE_Corpus& m_ACE_Corpus, list<Relation_Case>& Relation_Case_l)
@@ -215,12 +207,7 @@ void CGRIns::Extract_Sentence_with_Two_Named_Entities(ACE_Corpus& ACE_Corpus, li
 	map<string, vector<pair<ACE_extent, ACE_entity_mention*>>> EntityMentionInfo_map;//Save each entity mention info in doc.
 	//------------------------------------------------------------------------
 	//To test relation instance among annotated relatio mentions, this function sholud be annotated;
-	if(pCRDC->For_English_Relation_Flag){
-		ace_op::Segment_ACE_English_sgm_to_Sentence(ACE_sgm_mmap, ACE_DocSentence_map);
-	}
-	else{
-		ace_op::Segment_ACE_sgm_to_Sentence(ACE_sgm_mmap, ACE_DocSentence_map);
-	}
+	ace_op::Segment_ACE_sgm_to_Sentence(ACE_sgm_mmap, ACE_DocSentence_map);
 
 	//------------------------------------------------------------------------
 	//Only for negetive case influence analyse: Filtering clauses containing annotated relation mentions

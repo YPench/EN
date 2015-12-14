@@ -23,20 +23,15 @@
 #include "CEDT.h"
 
 extern int FEEDBACK_CASES_NUM;
-extern int GREEDY_MATCH_NUM;
-
 extern double FEEDBACE_PRO_LIMIT;
 extern int CAND_FEEDBACK_NUM;
 extern int BOARD_n_GRAM_NUM;
-extern int INTERNAL_WORDS_NUM;
-extern int BOARD_POS_NUM;
 
 extern bool CEDT_Head_Flag;
 extern bool CEDT_Detection_Flag;
 extern bool CEDT_Extend_Done_Flag;
 extern bool CEDT_Head_Done_Flag;
 extern bool CEDT_Head_Done_Flag;
-extern bool Greedy_Matching_Method_FLag;
 
 CDiscrimer::CDiscrimer()
 {
@@ -50,7 +45,7 @@ void CDiscrimer::Discrimer_Training_and_Testing_Port(vector<NE_Surround*>& train
 {
 	//--------for Training_Models_by_Cases
 	//CEDT_Detection_Flag = true;
-	if(CEDT_Detection_Flag || Greedy_Matching_Method_FLag){
+	if(CEDT_Detection_Flag){
 		Generate_Discrimer_for_Extend_or_Head_Only_Recognition(pCCEDT->m_TestingCEDTInfo);
 		return;
 	}

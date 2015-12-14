@@ -70,8 +70,6 @@ public:
 
 	afx_msg void OnBnClickedCrdcDel();
 	afx_msg void OnBnClickedCrdcRun();
-	afx_msg void OnBnClickedCrdcCollectPar();
-	afx_msg void OnBnClickedCrdcOutputSvm();
 
 	CButton m_ParseButton;
 	CButton m_RelationButton;
@@ -87,7 +85,7 @@ public:
 	string TrainingCasePath;
 	string InfoPath;
 
-	BOOL For_English_Relation_Flag;
+	//BOOL For_English_Relation_Flag;
 
 	string ACECorpusFolder;
 
@@ -121,10 +119,6 @@ public:
 	bool Training_Model_Flag;
 	bool Loading_Model_Flag;
 	bool Relation_Recognition_Flag;
-	bool Collecting_Model_Parameter_Flag;
-	bool Output_Feature_For_SVM_Flag;
-
-	void Output_ACE_for_YQWL(string savepath, ACE_Corpus& m_ACE_Corpus);
 	
 	CMenu m_Menu;
 	BOOL ARG1_Loaded_Flag;

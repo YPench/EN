@@ -36,10 +36,6 @@
 #include "CRDC\\CRDC_Dlg.h"
 #endif
 
-#ifdef CONSENSUS_ECOR
-#include "ECOR\\ECOR_Dlg.h"
-#endif
-
 #ifdef CONSENSUS_CDOC
 #include "CDOC\\DOC_Dlg.h"
 #endif
@@ -60,9 +56,6 @@ public:
 	CCRDC_Dlg m_CCRDC_Dlg;
 #endif
 
-#ifdef CONSENSUS_ECOR
-	ECOR_Dlg m_ECOR_Dlg;
-#endif
 
 #ifdef CONSENSUS_CDOC
 	CDOC_Dlg m_CDOC_Dlg;

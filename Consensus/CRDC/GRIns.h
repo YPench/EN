@@ -26,8 +26,7 @@ class CGRIns
 {
 public:
 	CRDC* pCRDC;
-	CSegmter& m_CSegmter;
-	CGRIns(CSegmter& ref_Segmter);
+	CGRIns();
 	~CGRIns();
 	size_t SENID;
 

@@ -21,8 +21,6 @@
 #include "ConvertUTF.h"
 
 CRDC::CRDC()
-: m_CGRIns(m_CSegmter)
-, m_CGREval(m_CSegmter)
 {
 
 	CRDC_Model_Loaded_Flag = false;
@@ -37,7 +35,6 @@ CRDC::CRDC()
 		_mkdir(m_Modelspace.c_str());
 	}
 	m_CGRIns.pCRDC = this;
-	m_CGREval.pCRDC = this;
 }
 CRDC::~CRDC()
 {
@@ -47,32 +44,6 @@ CRDC::~CRDC()
 		}
 	}
 	Training_v.clear();
-}
-
-void CRDC::Collecting_Model_Parameter_Port(string RelationCaseFilePath, string TrainingCaseFilePath, string infopath)
-{
-	if(Training_v.empty()){
-		Training_v.reserve(300000);
-		MAXEN::Read_CSmaxent_Training_Data(TrainingCaseFilePath.c_str(), TYPE_Flag?true:false, Training_v);
-	}
-
-	AppCall::Maxen_Responce_Message("\n\nCollect Model Parameter...\n\n");
-	AppCall::Maxen_Responce_Message("==========================================\n\n");
-
-	MAXEN::Get_Training_Cases_Model_Parameter(Training_v);
-
-}
-
-void CRDC::Output_Feature_For_SVM_Port()
-{
-	// Output for SVM Evaluation;
-
-	string inputpath = DATA_FOLDER;
-	inputpath += "CRDC\\";
-	inputpath += "Training_Case.txt";
-	string outputfolder = "F:\\YPench\\LIBLINEAR\\Data\\";
-	RCCOM::Output_For_LIBSVM(inputpath.c_str(), TYPE_Flag?true:false, outputfolder.c_str());
-	//ace_op::Computing_P_R_F("F:\\P_R_F.txt");
 }
 
 void CRDC::Start_Relation_Training_Port(string RelationCaseFilePath, string TrainingCaseFilePath, string infopath)
@@ -159,7 +130,7 @@ string CRDC::Relation_Case_Recognition_Port(Relation_Case& pmRelation_Case)
 {
 	vector<pair<string, float>> Features_v;
 
-	m_CGREval.Generate_CRDC_Feature_Vector_Port(pmRelation_Case, Features_v);
+	Generate_CRDC_Feature_Vector_Port(pmRelation_Case, Features_v);
 
 	pmRelation_Case.TYPE = m_Maxen.predict(Features_v);
 
@@ -173,7 +144,7 @@ string CRDC::Relation_Recognition_Port(const char* charInstance, const char* Arg
 {
 	vector<Relation_Case> Relation_Case_v;
 	
-	RCCOM::Generating_Relation_Cases(charInstance, Arg_1, Arg_2, Relation_Case_v);
+	//RCCOM::Generating_Relation_Cases(charInstance, Arg_1, Arg_2, Relation_Case_v);
 	
 	FeatureVctor Recogizing_v;
 	//m_CGREval.Generate_YPench_Evaluation_Port(Relation_Case_v, Recogizing_v);
@@ -212,19 +183,9 @@ string CRDC::Generate_Training_Cases_Port(string RelationCaseFilePath, string Tr
 	DulTraining_v.reserve(300000);
 	ace_op::Load_Relation_Case(RelationCaseFilePath.c_str(), Relation_Case_v);
 
-	if(!For_English_Relation_Flag){
-		Initiate_Relation_Det_Words_set(Relation_Case_v);
-	}
-	
-	if(!For_English_Relation_Flag){
-		m_CGREval.Generate_YPench_Evaluation_Port(TrainingCaseFilePath.c_str(), Relation_Case_v, DulTraining_v);
-		//m_CGREval.Generate_Che_Evaluation_Port(Relation_Case_v, DulTraining_v);
-		//m_CGREval.Generate_Zhang_Evaluation_Port(Relation_Case_v, DulTraining_v);
-	}
-	else{
-		m_CGREval.Generate_YPench_English_Evaluation_Port(TrainingCaseFilePath.c_str(), Relation_Case_v, DulTraining_v);
-		//m_CGREval.Generate_Nanda_English_Evaluation_Port(TrainingCaseFilePath.c_str(), Relation_Case_v, DulTraining_v);
-	}
+	Initiate_Relation_Det_Words_set(Relation_Case_v);
+
+	Generate_YPench_Evaluation_Port(TrainingCaseFilePath.c_str(), Relation_Case_v, DulTraining_v);
 
 	if(!DulTraining_v.empty()){
 		MAXEN::Output_Extract_Feature_Context_For_Maxent(TrainingCaseFilePath.c_str(), DulTraining_v);
@@ -288,29 +249,8 @@ void CRDC::Initiate_Relation_Det_Words_set(vector<Relation_Case*>& Relation_Case
 		}
 		else{
 			NLPOP::LoadWordsStringSet(lexiconpath, m_WordsSet);
-			//for(vector<Relation_Case>::iterator vite = Relation_Case_v.begin(); vite != Relation_Case_v.end(); vite++){
-			//	m_WordsSet.insert(ace_op::Delet_0AH_and_20H_in_string(Ref_E1.head.charseq.c_str()));
-			//	m_WordsSet.insert(ace_op::Delet_0AH_and_20H_in_string(Ref_E2.head.charseq.c_str()));
-			//}
-			//NLPOP::LoadWordsStringSet(lexiconpath, loc_set);
 		}
 	}
-	/*char sChar[3];
-	sChar[2]=0;
-	for(set<string>::iterator site = loc_set.begin(); site != loc_set.end(); site++){
-		for(size_t i = 0; i < site->length(); i++){
-			sChar[0] = site->c_str()[i++];
-			sChar[1] = 0;
-			if(sChar[0] < 0 ){
-				site->c_str()[i++];
-			}
-			m_WordsSet.insert(sChar);
-		}
-	}
-	lexiconpath = DATA_FOLDER;
-	lexiconpath += "default.data";
-	NLPOP::Save_Set_String_With_Comma_Divide(lexiconpath.c_str(), m_WordsSet);*/
-
 	if(false){//(Internet_Flag){
 		lexiconpath = DATA_FOLDER;
 		lexiconpath += "Worddb_set.dat";
@@ -327,28 +267,196 @@ void CRDC::Initiate_Relation_Det_Words_set(vector<Relation_Case*>& Relation_Case
 		}
 		NLPOP::LoadWordsStringSet(lexiconpath, m_WordsSet);
 	}
-	/*
-	lexiconpath = DATA_FOLDER;
-	lexiconpath += "stopword.dat";
-	vector<string> StopWords_v;
-	Read_Line_InFile_To_Vector_Deque_List<vector<string>>(lexiconpath, StopWords_v, 0, '\n', false);
-	for(vector<string>::iterator vite = StopWords_v.begin(); vite != StopWords_v.end(); vite++){
-		if(m_WordsSet.find(vite->data()) != m_WordsSet.end()){
-			m_WordsSet.erase(vite->data());
-		}
-	}
-	*/
-	/*string notespathstr = "F:\\YPench\\ConsensusGraph\\Data\\CRDC\\MergedNotes.dat";
-	map<string, string> locmap;
-	NLPOP::LoadNotesMapMerge(notespathstr, locmap);
-	for(map<string, string>::iterator mite = locmap.begin(); mite != locmap.end(); mite++){
-		m_WordsSet.insert(mite->first.c_str());
-	}*/
-
 	Max_Word_Legnth = 0;
 	for(set<string>::iterator site = m_WordsSet.begin();  site != m_WordsSet.end(); site++){
 		if( site->size() > Max_Word_Legnth){
 			Max_Word_Legnth = site->size();
 		}
 	}
+}
+
+//-------------------------------Generate Training and Testing Relation Cases
+void CRDC::Generate_CRDC_Feature_Vector_Port(Relation_Case& pmRelation_Case, vector<pair<string, float>>& Features_v)
+{
+	ostringstream ostrsteam;
+	Relation_Case& loc_Case = pmRelation_Case;
+	RelationContext loc_Context;
+	ACE_entity_mention& Ref_E1 = loc_Case.first_entity;
+	ACE_entity_mention& Ref_E2 = loc_Case.sencond_entity;
+	ACE_relation_mention& Ref_relationmention = loc_Case.relatin_mention;
+	map<string, float> WordsCnt_map;
+		
+	Sentop::Extract_ACE_entities_Pair_Context(loc_Case, loc_Context);
+	RCCOM::Delet_0AH_and_20H_in_Relation_Case(loc_Case);
+	RCCOM::Delet_0AH_and_20H_in_RelationContext(loc_Context);
+
+	//----Subtype and TYPE of entity pair;
+	if(true){//(Enitity_TYPE_Flag){
+		//------Multiplication Constraint   \mathcal{F}_{(E\_M)}
+		ostrsteam.str("");
+		ostrsteam << Ref_E1.Entity_TYPE << "_" << Ref_E2.Entity_TYPE;
+		WordsCnt_map.insert(make_pair(ostrsteam.str(), (float)1));
+		if(false){
+			ostrsteam.str("");
+			ostrsteam << Ref_E1.Entity_SUBSTYPE << "_" << Ref_E2.Entity_SUBSTYPE;
+			WordsCnt_map.insert(make_pair(ostrsteam.str(), (float)1));
+		}
+	}
+	//-----Entities Structure;
+	if(true){//(EntitiesStructure_Flag){
+		//------Singleton-------------------------\mathcal{F}_{(S\_S)}
+		WordsCnt_map.insert(make_pair(RCCOM::Get_Entity_Positional_Structures(loc_Case), (float)1));
+	}
+	//-----head noun;
+	if(true){//(HeadNoun_Flag){	
+		//------Position	\mathcal{F}_{(H\_P)}
+		WordsCnt_map.insert(make_pair(Ref_E1.head.charseq+"_E1", (float)1));	
+		WordsCnt_map.insert(make_pair(Ref_E2.head.charseq+"_E2", (float)1));
+
+	}
+	//-----dual types constriant;
+	if(true){//(POS_Tag_Flag){
+		//------Multiply Entity TYPE and Position
+		RCCOM::Adjacent_Words_POS_Feature_Extracting(m_CSegmter, loc_Context.L_str.c_str(), WordsCnt_map, "", "_"+Ref_E1.Entity_TYPE+"_E1");
+		RCCOM::Adjacent_Words_POS_Feature_Extracting(m_CSegmter, loc_Context.M_str.c_str(), WordsCnt_map, "E1_"+Ref_E1.Entity_TYPE+"_", "_"+Ref_E2.Entity_TYPE+"_E2");
+		RCCOM::Adjacent_Words_POS_Feature_Extracting(m_CSegmter, loc_Context.R_str.c_str(), WordsCnt_map, "E2_"+Ref_E2.Entity_TYPE+"_", "");
+	}
+
+	//-----Omni-words feature;
+	if(true){//(pCRDC->OmniWords_Flag){
+		//------Bin
+		m_CSegmter.Omni_words_feature_Extracting(Ref_E1.extent.charseq.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "F_", "");
+		m_CSegmter.Omni_words_feature_Extracting(Ref_E2.extent.charseq.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "S_", "");
+		m_CSegmter.Omni_words_feature_Extracting(loc_Context.L_str.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "L_", "");
+		m_CSegmter.Omni_words_feature_Extracting(loc_Context.M_str.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "M_", "");
+		m_CSegmter.Omni_words_feature_Extracting(loc_Context.R_str.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "R_", "");
+	}
+	for(map<string, float>::iterator mite = WordsCnt_map.begin(); mite != WordsCnt_map.end(); mite++){
+		Features_v.push_back(make_pair(mite->first, mite->second));
+	}
+}
+
+
+
+void CRDC::Generate_YPench_Evaluation_Port(const char * savepath, vector<Relation_Case*>& Relation_Case_v, DulTYPE_Vctor& pmTraining_v)
+{
+	map<string, size_t> PositionStructure_m;
+	for(vector<Relation_Case*>::iterator vite = Relation_Case_v.begin(); vite != Relation_Case_v.end(); vite++){
+		ostringstream ostrsteam;
+		Relation_Case& loc_Case = **vite;
+		RelationContext loc_Context;
+		ACE_entity_mention& Ref_E1 = loc_Case.first_entity;
+		ACE_entity_mention& Ref_E2 = loc_Case.sencond_entity;
+		ACE_relation_mention& Ref_relationmention = loc_Case.relatin_mention;
+		map<string, float> WordsCnt_map;
+		
+		Sentop::Extract_ACE_entities_Pair_Context(loc_Case, loc_Context);
+		RCCOM::Delet_0AH_and_20H_in_Relation_Case(loc_Case);
+		RCCOM::Delet_0AH_and_20H_in_RelationContext(loc_Context);
+
+		if(true){//(Enitity_TYPE_Flag){
+			WordsCnt_map.insert(make_pair(Ref_E1.Entity_TYPE, (float)1));
+			WordsCnt_map.insert(make_pair(Ref_E2.Entity_TYPE, (float)1));
+			WordsCnt_map.insert(make_pair(Ref_E1.Entity_SUBSTYPE, (float)1));
+			WordsCnt_map.insert(make_pair(Ref_E2.Entity_SUBSTYPE, (float)1));
+		}
+		//-----head noun;
+		if(true){//(HeadNoun_Flag){		
+			//------Singleton---------------\mathcal{F}_{(H\_S)}
+			WordsCnt_map.insert(make_pair(Ref_E1.head.charseq, (float)1));
+			WordsCnt_map.insert(make_pair(Ref_E2.head.charseq, (float)1));
+		}
+		//-----Entities Structure;
+		if(true){//(EntitiesStructure_Flag){
+			//------Singleton-------------------------\mathcal{F}_{(S\_S)}
+			WordsCnt_map.insert(make_pair(RCCOM::Get_Entity_Positional_Structures(loc_Case), (float)1));
+
+			string locstr = RCCOM::Get_Entity_Positional_Structures(**vite);
+			if(PositionStructure_m.find(locstr) == PositionStructure_m.end()){
+				PositionStructure_m.insert(make_pair(locstr, 0));
+			}
+			PositionStructure_m[locstr]++;
+		}
+		//-----dual types constriant;
+		if(true){//(POS_Tag_Flag){
+			//------Singleton   \mathcal{F}_{(P\_S)}
+			RCCOM::Local_Adjacent_Words_Singleton_POS_Feature_Extracting(m_CSegmter, loc_Context.L_str.c_str(), WordsCnt_map, "", "_");
+			RCCOM::Local_Adjacent_Words_Singleton_POS_Feature_Extracting(m_CSegmter, loc_Context.M_str.c_str(), WordsCnt_map, "_", "_");
+			RCCOM::Local_Adjacent_Words_Singleton_POS_Feature_Extracting(m_CSegmter, loc_Context.R_str.c_str(), WordsCnt_map, "_", "");
+		}
+		//-----Omni-words feature;
+		if(true){//(OmniWords_Flag){
+			m_CSegmter.Omni_words_feature_Extracting(Ref_E1.extent.charseq.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "", "");
+			m_CSegmter.Omni_words_feature_Extracting(Ref_E2.extent.charseq.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "", "");
+			m_CSegmter.Omni_words_feature_Extracting(loc_Context.L_str.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "", "");
+			m_CSegmter.Omni_words_feature_Extracting(loc_Context.M_str.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "", "");
+			m_CSegmter.Omni_words_feature_Extracting(loc_Context.R_str.c_str(), m_WordsSet, Max_Word_Legnth, WordsCnt_map, "", "");
+		}
+		if(false){//(Segmentation_Flag){
+			//m_CSegmter.ICTCLAS_Segmentation_words_feature_Extracting(ace_op::Delet_0AH_and_20H_in_string(loc_Case.relatin_mention.extent.charseq.c_str()).c_str(), WordsCnt_map, "", "");
+			m_CSegmter.ICTCLAS_Segmentation_words_feature_Extracting(Ref_E1.extent.charseq.c_str(), WordsCnt_map, "Fs_", "");
+			m_CSegmter.ICTCLAS_Segmentation_words_feature_Extracting(Ref_E2.extent.charseq.c_str(), WordsCnt_map, "Ss_", "");
+			m_CSegmter.ICTCLAS_Segmentation_words_feature_Extracting(loc_Context.L_str.c_str(), WordsCnt_map, "Ls_", "");
+			m_CSegmter.ICTCLAS_Segmentation_words_feature_Extracting(loc_Context.M_str.c_str(), WordsCnt_map, "Ms_", "");
+			m_CSegmter.ICTCLAS_Segmentation_words_feature_Extracting(loc_Context.R_str.c_str(), WordsCnt_map, "Rs_", "");
+		}
+		if(false){
+			size_t nGram = 1;
+			//------Bin
+			N_Gram_of_Sent_Sequence(Ref_E1.extent.charseq.c_str(), nGram, WordsCnt_map, "F_", "");
+			N_Gram_of_Sent_Sequence(Ref_E2.extent.charseq.c_str(), nGram, WordsCnt_map, "S_", "");
+			N_Gram_of_Sent_Sequence(loc_Context.L_str.c_str(), nGram, WordsCnt_map, "L_", "");
+			N_Gram_of_Sent_Sequence(loc_Context.M_str.c_str(), nGram, WordsCnt_map, "M_", "");
+			N_Gram_of_Sent_Sequence(loc_Context.R_str.c_str(), nGram, WordsCnt_map, "R_", "");
+		}
+		if(false){//(EntityCLASS_Flag){
+			WordsCnt_map.insert(make_pair(Ref_E1.Entity_CLASS, (float)1));
+			WordsCnt_map.insert(make_pair(Ref_E2.Entity_CLASS, (float)1));
+			WordsCnt_map.insert(make_pair(Ref_E1.LDCTYPE, (float)1));
+			WordsCnt_map.insert(make_pair(Ref_E2.LDCTYPE, (float)1));
+
+		}
+		if(WordsCnt_map.empty()){
+			continue;
+		}
+		
+		pair<pair<string, string>, vector<pair<string, float>>>* pCRDC_Case_v = new pair<pair<string, string>, vector<pair<string, float>>>;
+		pCRDC_Case_v->first.first  = loc_Case.TYPE;
+		pCRDC_Case_v->first.second = loc_Case.SUBTYPE;
+		for(map<string, float>::iterator mite = WordsCnt_map.begin(); mite != WordsCnt_map.end(); mite++){
+			pCRDC_Case_v->second.push_back(make_pair(mite->first, mite->second));
+		}
+		pmTraining_v.push_back(pCRDC_Case_v);
+
+		delete *vite;
+	}
+
+	Relation_Case_v.clear();
+}
+
+
+
+
+void CRDC::N_Gram_of_Sent_Sequence(const char* sentchar, size_t range, map<string, float>& WordsCnt_map, string prix = "", string prox = "")
+{
+	//map<string, float> loc_WordsCnt_map;
+	ostringstream ostrsteam;
+	vector<string> locchar_v;
+	NLPOP::charseq_to_vector(sentchar, locchar_v);
+	size_t Counter = 0;
+	for(size_t i = 0; i < locchar_v.size(); i++){
+		size_t limit = i + range;
+		if(limit > locchar_v.size()){
+			limit = locchar_v.size();
+		}
+		string str;
+		for(size_t j = i; j < limit; j++){
+			str += locchar_v[j];
+			ostrsteam.str("");
+			ostrsteam << prix << str << prox;
+			WordsCnt_map.insert(make_pair(ostrsteam.str(), (float)1));
+			//loc_WordsCnt_map.insert(make_pair(ostrsteam.str(), (float)1));
+		}
+	}
+
 }

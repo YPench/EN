@@ -234,56 +234,9 @@ void CSegmter::Omni_words_feature_Extracting(const char* sentchar, set<string>& 
 			i++;
 		}
 	}
-	/*string feature;
-	map<string, unsigned long> loc_featuremap;
-
-	Get_Sentence_Omni_Words_Cnt(sentchar, pmWordSet, loc_featuremap);
-
-	for(map<string, unsigned long>::iterator mite = loc_featuremap.begin(); mite != loc_featuremap.end(); mite++){
-		feature = prix + mite->first + prox;
-		if(WordsCnt_map.find(feature) == WordsCnt_map.end()){
-			WordsCnt_map.insert(make_pair(feature, (float)1));//Warning
-		}
-	}*/
 }
 //older function
-void CSegmter::Get_Sentence_Omni_Words_Cnt(const char* charstr, set<string>& pmWordsset, map<string, unsigned long>& WordsCnt_map)
-{
-	char sentencechar[MAX_SENTENCE];
-	char sChar[3];
-	sChar[2]=0;
-	if(strlen(charstr) == 0){
-		if(WordsCnt_map.find("#") == WordsCnt_map.end()){
-			WordsCnt_map.insert(make_pair("#", 1));
-		}
-		else {
-			WordsCnt_map["#"]++;
-		}
-		return;
-	}
-	for(unsigned int i = 0; i < strlen(charstr); ){
-		strcpy_s(sentencechar, MAX_SENTENCE, "");
-		for(unsigned int j = i; j < strlen(charstr); ){
-			sChar[0] = charstr[j++];
-			sChar[1] = 0;	
-			if(sChar[0] < 0 ){
-				sChar[1]=charstr[j++];
-			}
-			strcat_s(sentencechar, MAX_SENTENCE, sChar);
-			if(pmWordsset.find(sentencechar) != pmWordsset.end()){
-				if(WordsCnt_map.find(sentencechar) == WordsCnt_map.end()){
-					WordsCnt_map.insert(make_pair(sentencechar, 1));
-				}
-				else {
-					WordsCnt_map[sentencechar]++;
-				}
-			}
-		}
-		if(charstr[i++] < 0){
-			i++;
-		}
-	}
-}
+
 
 void CSegmter::Omni_words_feature_Extracting(const char* sentchar, set<string>& pmWordSet, map<string, size_t>& WordsCnt_map)
 {
@@ -321,40 +274,6 @@ void CSegmter::Omni_words_feature_Extracting(const char* sentchar, set<string>& 
 	}
 }
 
-void CSegmter::Get_Sentence_Omni_Words_Cnt(const char* charstr, set<string>& pmWordsset, size_t Max_Word_Legnth, map<string, unsigned long>& WordsCnt_map)
-{
-	char sentencechar[MAX_SENTENCE];
-	char sChar[3];
-	sChar[2]=0;
-	size_t charstrlen = strlen(charstr);
-
-	for(unsigned int i = 0; i < charstrlen; ){
-		strcpy_s(sentencechar, MAX_SENTENCE, "");
-		size_t max_j = i + Max_Word_Legnth;
-		if(max_j > charstrlen){
-			max_j = charstrlen;
-		}
-		for(unsigned int j = i; j < max_j; ){
-			sChar[0] = charstr[j++];
-			sChar[1] = 0;	
-			if(sChar[0] < 0 ){
-				sChar[1]=charstr[j++];
-			}
-			strcat_s(sentencechar, MAX_SENTENCE, sChar);
-			if(pmWordsset.find(sentencechar) != pmWordsset.end()){
-				if(WordsCnt_map.find(sentencechar) == WordsCnt_map.end()){
-					WordsCnt_map.insert(make_pair(sentencechar, 1));
-				}
-				else {
-					WordsCnt_map[sentencechar]++;
-				}
-			}
-		}
-		if(charstr[i++] < 0){
-			i++;
-		}
-	}
-}
 
 
 

@@ -18,8 +18,6 @@
 #include "stdafx.h"
 #include "..\\Include\\ace.h"
 
-extern string Detect_Single_NE_TYPE;
-
 void ace_op::Get_Entity_Mention_extent_Map(vector<ACE_entity_mention>& EntityMention_v, set<size_t>& START_s, set<size_t>& END_s)
 {
 	for(vector<ACE_entity_mention>::iterator pvite = EntityMention_v.begin(); pvite != EntityMention_v.end(); pvite++){	
@@ -53,23 +51,13 @@ void ace_op::Get_Entity_Mention_extent_Map(vector<ACE_entity_mention>& EntityMen
 void ace_op::Get_Entity_Mention_head_Map(vector<ACE_entity_mention>& EntityMention_v, set<size_t>& START_s, set<size_t>& END_s)
 {
 	for(vector<ACE_entity_mention>::iterator pvite = EntityMention_v.begin(); pvite != EntityMention_v.end(); pvite++){
-		if(Detect_Single_NE_TYPE.length() == 0){
-			START_s.insert(pvite->head.START);
-			END_s.insert(pvite->head.END);
-		}
-		else if(!strcmp(pvite->Entity_TYPE.c_str(), Detect_Single_NE_TYPE.c_str())){
-			START_s.insert(pvite->head.START);
-			END_s.insert(pvite->head.END);
-		}
+		START_s.insert(pvite->head.START);
+		END_s.insert(pvite->head.END);
 	}
 }
 void ace_op::Get_Entity_Mention_head_Map(vector<ACE_entity_mention>& EntityMention_v, map<size_t, map<size_t, ACE_entity_mention*>>& EntityMention_mm, set<size_t>& START_s, set<size_t>& END_s)
 {
 	for(vector<ACE_entity_mention>::iterator pvite = EntityMention_v.begin(); pvite != EntityMention_v.end(); pvite++){	
-		if((Detect_Single_NE_TYPE.length() != 0) && strcmp(pvite->Entity_TYPE.c_str(), Detect_Single_NE_TYPE.c_str())){
-			continue;
-		}
-
 		if(EntityMention_mm.find(pvite->head.START) == EntityMention_mm.end()){
 			EntityMention_mm[pvite->head.START];
 			START_s.insert(pvite->head.START);

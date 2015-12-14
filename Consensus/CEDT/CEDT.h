@@ -25,12 +25,9 @@
 #include "DetBound.h"
 #include "DetCandit.h"
 #include "Discrimer.h"
-#include "CEDTInfo.h"
-#include "Antical.h"
-#include "CCRF.h"
-#include "CExtra.h"
-#include "CMaxmatch.h"
+//#include "CEDTInfo.h"
 #include "CSegmter.h"
+#include "NECom.h"
 
 typedef struct _SentNEInfo{
 	map<size_t, map<size_t, pair<string, double>>> Extend_mm;
@@ -43,16 +40,8 @@ class CCEDT
 	CDetBound m_CDetBound;
 	CDetCandit m_CDetCandit;
 	CDiscrimer m_CDiscrimer;
-	CAntical m_CAntical;
-	
-	CExtra m_CExtra;
-
 public:
-	CCRF m_CCRF;
 	CNEFeator m_CNEFeator;
-//	CSegmter m_CSegmter;
-//	CMaxmatch m_CMaxmatch;
-//	set<string> Lexicon_s;
 
 	size_t m_CanditIte;
 	size_t m_BoundIte;
@@ -95,9 +84,6 @@ public:
 	Maxen_Rtn_map R_nCrossRtn_m;
 	set<string> SegChar_s;
 
-	vector<NE_Surround*> n_CrossSurround_v;
-	vector<DismCase*> n_CrossDismCase_v;
-
 public:
 	CCEDT();
 	~CCEDT();
@@ -117,15 +103,14 @@ public:
 	void Sentence_Named_Entity_Recognization(const char* inputchar, vector<entity_mention>& pmEntity_v);
 public:
 	//--------Generate Cases-------------------------------------------------------------------------
-	void Init_CCEDT();
 	void Named_Entity_Training_or_Testing(vector<NE_Surround*>& training_Surround_v, vector<NE_Surround*>& testing_Surround_v);
 	void Reset_CEDT_Memories();
 	bool Apply_for_Model_Training(bool EmptyData_Flag, const char* pTYPEchar);
-	string CCEDT::Return_Model_Path(const char* pTYPEchar);
+	string Return_Model_Path(const char* pTYPEchar);
 	void Save_MaxentModel(const char* pTYPEchar, MaxentModel& pmaxent);
 	bool Load_MaxentModel(const char* pTYPEchar, MaxentModel& pmaxent);
 
 	string Generate_Marked_NE_Sentence_with_Erasing(const char* inputchar, vector<DismCase*>& pmDismCase_v, SentNEInfo& pmSentNEInfo, size_t migration);
 
-	
+
 };

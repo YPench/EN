@@ -483,7 +483,6 @@ void CAct::Generating_Maxen_Model(CENET_Dlg* p_m_CENET_Dlg)
 	
 	if(false){
 		MAXEN::cross_validation_with_Weight(Training_v, 5, 30, "lbfgs", 0, true, 1.0, POSITIVE);
-		//MAXEN::cross_validation(Training_v, 5, 30, "lbfgs", 0, true);
 	}
 	else{
 		//--------------------------------------

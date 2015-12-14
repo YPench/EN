@@ -18,17 +18,8 @@
 #include "StdAfx.h"
 #include "maxen.h"
 #include "CSegmter.h"
-
-
 #include <windows.h>
 
-extern bool Greedy_Matching_Method_FLag;
-
-extern bool Collect_nGross_Boundary_Info;
-extern bool Collect_nGross_Candidate_Info;
-
-extern Maxen_Rtn_map P_G_nCrossRtn_m;
-extern Maxen_Rtn_map R_G_nCrossRtn_m;
 
 void MAXEN::Output_Extract_Feature_Context_For_Maxent(const char* FilePath, DulTYPE_Vctor& RelationWrods_v)
 {
@@ -65,54 +56,6 @@ void MAXEN::Output_Extract_Feature_Context_For_Maxent(const char* FilePath, Feat
 	}
 	out.close();
 }
-void MAXEN::Coreference_Discriminating_with_Erasing(vector<pair<string, double>>& CoValue_v, FeatureVctor& Testing_v, MaxentModel& pmMaxen)
-{
-	Maxen_Rtn_map Recall_map;
-	Maxen_Rtn_map Pricision_map;
-	FeatureVctor::iterator pit;
-	vector<pair<string, double>>::iterator valueite = CoValue_v.begin();
-	for (pit = Testing_v.begin(); pit != Testing_v.end() || valueite != CoValue_v.end();  ){
-		if(!strcmp(valueite->first.c_str(), "Exclusive")){
-			valueite++;
-			continue;
-		}
-		if(pit == Testing_v.end()){
-			AppCall::Secretary_Message_Box("Data Error in: AXEN::Coreference_Discriminating_with_Erasing()");
-		}
-		
-		me_context_type& context_ref = (*pit)->second;
-		me_outcome_type predict_out= pmMaxen.predict(context_ref);
-		valueite->second = pmMaxen.eval(context_ref, valueite->first);
-		
-		//predict
-		if(Recall_map.find(predict_out) == Recall_map.end()){
-			Recall_map.insert(make_pair(predict_out, make_pair(0,0)));
-			Pricision_map.insert(make_pair(predict_out, make_pair(0,0)));
-		}
-		if(Recall_map.find(valueite->first) == Recall_map.end()){
-			Recall_map.insert(make_pair(valueite->first, make_pair(0,0)));
-			Pricision_map.insert(make_pair(valueite->first, make_pair(0,0)));
-		}
-		if(!strcmp(valueite->first.c_str(), predict_out.c_str())){
-			Recall_map[predict_out].first++;
-			Pricision_map[predict_out].first++;
-		}
-		Recall_map[valueite->first].second++;
-		Pricision_map[predict_out].second++;
-
-		valueite->first = predict_out;
-		
-		delete *pit;
-		pit++;
-		valueite++;
-    }
-	Testing_v.clear();
-	
-	MAXEN::Display_Performance_for_MAXEN(true, true, Pricision_map, Recall_map, AppCall::Subsection_Responce_Message_Memo("n-Gross Coreference Performance").c_str());
-
-	MAXEN::Collect_nGross_Performances(Pricision_map, Recall_map, P_G_nCrossRtn_m, R_G_nCrossRtn_m);
-
-}
 
 void MAXEN::Maxen_Recognizing_with_eval_Erasing(MaxentModel& pmMaxen, FeatureVctor& Recongizing_v, vector<pair<string,double>>& rtnValue_v)
 {
@@ -130,34 +73,6 @@ void MAXEN::Maxen_Recognizing_with_eval_Erasing(MaxentModel& pmMaxen, FeatureVct
 	Recongizing_v.clear();
 }
 
-void MAXEN::Init_Rtn_map_by_Designated_String(Maxen_Rtn_map& P_Rtn_m, Maxen_Rtn_map& R_Rtn_m, string& pmTYPE)
-{
-	if(P_Rtn_m.find(pmTYPE) == P_Rtn_m.end()){
-		P_Rtn_m.insert(make_pair(pmTYPE, make_pair(0,0)));
-	}
-	if(R_Rtn_m.find(pmTYPE) == R_Rtn_m.end()){
-		R_Rtn_m.insert(make_pair(pmTYPE, make_pair(0,0)));
-	}
-}
-
-void MAXEN::Collect_nGross_Performances(Maxen_Rtn_map& P_Rtn_m, Maxen_Rtn_map& R_Rtn_m, Maxen_Rtn_map& P_G_nCrossRtn_m, Maxen_Rtn_map& R_G_nCrossRtn_m)
-{
-	for(map<string, pair<size_t, size_t>>::iterator mite = P_Rtn_m.begin(); mite != P_Rtn_m.end(); mite++){
-		if(P_G_nCrossRtn_m.find(mite->first) == P_G_nCrossRtn_m.end()){
-			P_G_nCrossRtn_m.insert(make_pair(mite->first, make_pair(0,0)));
-		}
-		P_G_nCrossRtn_m[mite->first].first += mite->second.first;
-		P_G_nCrossRtn_m[mite->first].second += mite->second.second;
-	}
-	for(map<string, pair<size_t, size_t>>::iterator mite = R_Rtn_m.begin(); mite != R_Rtn_m.end(); mite++){
-		if(R_G_nCrossRtn_m.find(mite->first) == R_G_nCrossRtn_m.end()){
-			R_G_nCrossRtn_m.insert(make_pair(mite->first, make_pair(0,0)));
-		}
-		R_G_nCrossRtn_m[mite->first].first += mite->second.first;
-		R_G_nCrossRtn_m[mite->first].second += mite->second.second;
-	}
-
-}
 
 void MAXEN::Discrimer_Maxen_Recognization_with_Erasing(vector<DismCase*>& pmDismCase_v, FeatureVctor& Testing_v, MaxentModel& pmMaxen)
 {
@@ -196,24 +111,6 @@ void MAXEN::Discrimer_Maxen_Testing_with_Erasing(vector<DismCase*>& pmDismCase_v
 	Testing_v.clear();
 }
 
-void MAXEN::CExtra_Maxen_Testing_with_FeatureVector_Erasing(vector<pair<string, pair<string, double>>*>& pmResult_v, FeatureVctor& Testing_v, MaxentModel& pmMaxen)
-{
-	if(pmResult_v.size() != Testing_v.size()){
-		AppCall::Secretary_Message_Box("Unequal data size in:  MAXEN::CExtra_Maxen_Testing_with_FeatureVector_Erasing()", MB_OK);
-	}
-	
-	FeatureVctor::iterator it;
-	vector<pair<string, pair<string, double>>*>::iterator vite = pmResult_v.begin();
-	for (it = Testing_v.begin(); it != Testing_v.end(); it++, vite++){
-		me_context_type& context_ref = (*it)->second;
-		//predict
-		pair<string, pair<string, double>>& rtnpair = **vite;
-		rtnpair.second.first = pmMaxen.predict(context_ref);
-		rtnpair.second.second = pmMaxen.eval(context_ref, rtnpair.second.first);
-		delete *it;
-    }
-	Testing_v.clear();
-}
 
 //-----------------For CEDT
 void MAXEN::Training_Cases_Check(FeatureVctor& Training_v)
@@ -375,10 +272,6 @@ void MAXEN::Boundary_Testing_with_eval_Erasing(FeatureVctor& Training_v, MaxentM
 	}
 	Display_Performance_for_MAXEN(false, Save_Info_Flag, Pricision_map, Recall_map, "");
 
-	//------------------------------------------------------------------
-	if(false && Collect_nGross_Boundary_Info && Save_Info_Flag && !Collect_nGross_Candidate_Info){
-		MAXEN::Collect_nGross_Performances(Pricision_map, Recall_map, P_G_nCrossRtn_m, R_G_nCrossRtn_m);
-	}
 }
 
 void MAXEN::Candit_Maxen_Testing_with_Erasing(FeatureVctor& Testing_v, MaxentModel& pmMaxen, map<string, size_t>& pmPositive_Cases, vector<CanditCase*>& pmCandit_v)
@@ -429,9 +322,6 @@ void MAXEN::Candit_Maxen_Testing_with_Erasing(FeatureVctor& Testing_v, MaxentMod
 		}
 		Display_Performance_for_MAXEN(true, true, Pricision_map, Recall_map, "");
 
-		if(Collect_nGross_Candidate_Info && !Collect_nGross_Boundary_Info){
-			MAXEN::Collect_nGross_Performances(Pricision_map, Recall_map, P_G_nCrossRtn_m, R_G_nCrossRtn_m);
-		}
 	}
 }
 void MAXEN::Candit_Maxen_Recognization_with_Erasing(FeatureVctor& Testing_v, MaxentModel& pmMaxen, vector<CanditCase*>& pmCandit_v)
@@ -1081,45 +971,6 @@ void MAXEN::cross_validation(FeatureVctor& v, size_t n, int iter, const string& 
 }
 
 
-void MAXEN::Get_Training_Cases_Model_Parameter(FeatureVctor& v) 
-{
-		MaxentModel m;
-        m.begin_add_event();
-        m.add_FeatureVctor_events(v.begin(), v.end());
-        m.end_add_event();
-        m.train(1, "lbfgs", 0); 
-		AppCall::Maxen_Responce_Message("\n\nParameter is collected....");
-}
-void MAXEN::Maxen_Training_With_Heldout(size_t heldout, vector<pair<me_context_type, me_outcome_type> >& training_case_v)
-{
-	if(heldout < 0){ 
-		heldout = 0;
-	}
-	else if(heldout > 10){
-		heldout = 10;
-	}
-	MaxentModel pmMaxen;
-
-	//vector<pair<me_context_type, me_outcome_type> > training_case_v;
-    vector<pair<me_context_type, me_outcome_type> >::iterator it;
-
-	random_shuffle(training_case_v.begin(), training_case_v.end());
-
-	size_t trainingSize = training_case_v.size()*heldout/10;
-
-	pmMaxen.begin_add_event();
-	pmMaxen.add_events(training_case_v.begin(), training_case_v.begin()+trainingSize);
-
-	for(it = training_case_v.begin()+trainingSize; it != training_case_v.end(); it++){
-		pmMaxen.add_heldout_event(it->first,it->second, 1);
-	}
-	pmMaxen.end_add_event();
-
-	pmMaxen.train(30, "lbfgs", 0);
-
-
-}
-
 void MAXEN::Read_CSmaxent_Training_Data(const char* FilePath, bool TYPE_Flag, FeatureVctor& Training_v)
 {
 	ifstream in(FilePath);
@@ -1161,165 +1012,6 @@ void MAXEN::Read_CSmaxent_Training_Data(const char* FilePath, bool TYPE_Flag, Fe
 	}
 	in.close();
 }
-
-void MAXEN::Generate_Training_Matrix(const char* openpath, const char* savepath)
-{
-	vector<pair<me_context_type, me_outcome_type> > v;
-//MAXEN::Read_CSmaxent_Training_Data(openpath, v);
-	cout << "Data is loaded, data format changing...\n";
-	vector<pair<me_context_type, me_outcome_type> >::iterator  iter_v;
-	map<string, long> Feature_Position_map;
-	map<long, string> Position_Feature_map;
-
-	map<string, long> Class_Position_map;
-	map<long, string> Position_Class_map;
-
-	long coordinate = 0;
-	long classtype = 0;
-	for(iter_v = v.begin(); iter_v != v.end(); iter_v++){
-		for(std::vector<pair<std::string, float>>::iterator vite = iter_v->first.begin(); vite != iter_v->first.end();vite++){
-			if(Feature_Position_map.find(vite->first) == Feature_Position_map.end()){
-				Feature_Position_map.insert(make_pair(vite->first, coordinate));
-				Position_Feature_map.insert(make_pair(coordinate, vite->first));
-				coordinate++;
-			}
-		}
-		if(Class_Position_map.find(iter_v->second) == Class_Position_map.end()){
-			Class_Position_map.insert(make_pair(iter_v->second, classtype));
-			Position_Class_map.insert(make_pair(classtype, iter_v->second));
-			classtype++;
-		}
-	}
-
-	cout << "Output data...\n";
-
-	ofstream out(savepath);
-	if(out.bad())
-	{
-		return;
-	}
-	out.clear();
-	out.seekp(0, ios::beg);
-
-	long vectorlength = Feature_Position_map.size();
-	for(iter_v = v.begin(); iter_v != v.end(); iter_v++){
-		vector<pair<std::string, float>>& candidate_v = iter_v->first;
-		map<long, float> casefeature_map;
-		long out_coordinate = 0;
-		for(vector<pair<std::string, float>>::iterator vite = candidate_v.begin(); vite != candidate_v.end(); vite++){
-			if(casefeature_map.find(Feature_Position_map[vite->first]) == casefeature_map.end()){
-				casefeature_map.insert(make_pair(Feature_Position_map[vite->first], vite->second));
-			}
-			else{
-				casefeature_map[Feature_Position_map[vite->first]] += vite->second;
-			}
-		}
-		while(out_coordinate < vectorlength){
-			if(casefeature_map.empty()){
-				while(out_coordinate < vectorlength){
-					out << 0 << " ";
-					out_coordinate++;
-				}
-				break;
-			}
-			else{
-				while(out_coordinate < casefeature_map.begin()->first){
-					out << 0 << " ";
-					out_coordinate++;
-				}
-			}
-			out << casefeature_map.begin()->second << " ";
-			out_coordinate++;
-			casefeature_map.erase(casefeature_map.begin());
-		}
-		
-		out << Class_Position_map[iter_v->second] << '\n';
-	}
-	out.close();
-	return;
-}
-
-
-void MAXEN::Generate_Training_Matrix_3_Gram(const char* openpath, const char* savepath, const char* classpath)
-{
-	vector<pair<me_context_type, me_outcome_type> > v;
-//MAXEN::Read_CSmaxent_Training_Data(openpath, v);
-	cout << "Data is loaded, data format changing...\n";
-	vector<pair<me_context_type, me_outcome_type> >::iterator  iter_v;
-	map<string, long> Feature_Position_map;
-	map<long, string> Position_Feature_map;
-	map<string, long> Class_Position_map;
-	map<long, string> Position_Class_map;
-
-	long coordinate = 1;
-	long classtype = 0;
-	for(iter_v = v.begin(); iter_v != v.end(); iter_v++){
-		for(std::vector<pair<std::string, float>>::iterator vite = iter_v->first.begin(); vite != iter_v->first.end();vite++){
-			if(Feature_Position_map.find(vite->first) == Feature_Position_map.end()){
-				Feature_Position_map.insert(make_pair(vite->first, coordinate));
-				Position_Feature_map.insert(make_pair(coordinate, vite->first));
-				coordinate++;
-			}
-		}
-		if(Class_Position_map.find(iter_v->second) == Class_Position_map.end()){
-			Class_Position_map.insert(make_pair(iter_v->second, classtype));
-			Position_Class_map.insert(make_pair(classtype, iter_v->second));
-			classtype++;
-		}
-	}
-	cout << "Output data...\n";
-	ofstream out(savepath);
-	if(out.bad())
-	{
-		return;
-	}
-	out.clear();
-	out.seekp(0, ios::beg);
-
-	ofstream classout(classpath);
-	if(classout.bad())
-	{
-		return;
-	}
-	classout.clear();
-	classout.seekp(0, ios::beg);
-	long vectorlength = Feature_Position_map.size();
-	long row_cordinate = 1;
-	for(iter_v = v.begin(); iter_v != v.end(); iter_v++){
-		vector<pair<std::string, float>>& candidate_v = iter_v->first;
-		map<long, float> casefeature_map;
-		for(vector<pair<std::string, float>>::iterator vite = candidate_v.begin(); vite != candidate_v.end(); vite++){
-			if(casefeature_map.find(Feature_Position_map[vite->first]) == casefeature_map.end()){
-				casefeature_map.insert(make_pair(Feature_Position_map[vite->first], vite->second));
-			}
-			else{
-				casefeature_map[Feature_Position_map[vite->first]] += vite->second;
-			}
-		}
-		for(map<long, float>::iterator mite = casefeature_map.begin(); mite != casefeature_map.end(); mite++){
-			out << row_cordinate << ',' << mite->first << ',' << mite->second << '\n';
-		}
-		classout << Class_Position_map[iter_v->second] << '\n';
-		row_cordinate++;
-	}
-	classout.close();
-	out.close();
-	return;
-}
-
-void MAXEN::Training_v_To_training_case(uFeatureVctor& Training_v, vector<pair<me_context_type, me_outcome_type> >& training_case_v)
-{
-	for(uFeatureVctor::iterator vvite = Training_v.begin(); vvite != Training_v.end(); vvite++){
-		me_context_type context;
-		for(vector<pair<string, float>>::iterator vite = vvite->second.begin(); vite != vvite->second.end(); vite++){
-			context.push_back(make_pair(vite->first, vite->second));
-		}
-		training_case_v.push_back(make_pair(context, vvite->first));
-	}
-}
-
-
-
 
 
 void predict(const MaxentModel& m, const string& in_file, const string& out_file, bool output_prob) {

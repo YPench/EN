@@ -21,14 +21,14 @@
 #include "ace.h"
 #include "maxen.h"
 #include "GRIns.h"
-#include "GREval.h"
+//#include "GREval.h"
 
 class CRDC
 {
 public:
 	CSegmter m_CSegmter;
 	CGRIns m_CGRIns;
-	CGREval m_CGREval;
+	//CGREval m_CGREval;
 
 	FeatureVctor Training_v;
 	MaxentModel m_Maxen;
@@ -40,7 +40,6 @@ public:
 	size_t m_nGross;
 	size_t m_IterTime;
 
-	BOOL For_English_Relation_Flag;
 	BOOL TYPE_Flag;
 	BOOL SUBTYPE_Flag;
 	BOOL Enitity_TYPE_Flag;
@@ -67,10 +66,12 @@ public:
 	void Generate_Relation_Case_Port(string savepath, ACE_Corpus& m_ACE_Corpus);
 	void Start_Relation_Training_Port(string RelationCaseFilePath, string TrainingCaseFilePath, string infopath);
 	void CRDC_Training_Model_Port(string RelationCaseFilePath, string TrainingCaseFilePath, string infopath);
-	void Collecting_Model_Parameter_Port(string RelationCaseFilePath, string TrainingCaseFilePath, string infopath);
-	void Output_Feature_For_SVM_Port();
 
 	//-------------------------------
 	void Loading_CRDC_Model();
 	void Initiate_Relation_Det_Words_set(vector<Relation_Case*>& Relation_Case_v);
+	void Generate_YPench_Evaluation_Port(const char * savepath, vector<Relation_Case*>& Relation_Case_v, DulTYPE_Vctor& pmTraining_v);
+	void Generate_CRDC_Feature_Vector_Port(Relation_Case& pmRelation_Case, vector<pair<string, float>>& Features_v);
+	void N_Gram_of_Sent_Sequence(const char* sentchar, size_t range, map<string, float>& WordsCnt_map, string prix, string prox);
+
 };

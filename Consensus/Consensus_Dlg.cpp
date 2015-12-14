@@ -167,16 +167,6 @@ BOOL CConsensus_Dlg::OnInitDialog()
 	m_CCRDC_Dlg.p_CParentDlg = this;
 	m_sheet.AddPage(_T("Relation"), &m_CCRDC_Dlg, IDD_CRDC);
 	ACECorpusFolder = CHINESE_CORPUS_FOLDER;
-	if(m_CCRDC_Dlg.For_English_Relation_Flag){
-		ACECorpusFolder = ENGLISH_CORPUS_FOLDER;
-	}
-		
-#endif
-
-#ifdef CONSENSUS_ECOR
-	m_ECOR_Dlg.p_CParentDlg = this;
-	m_sheet.AddPage(_T("指代消解"), &m_ECOR_Dlg, IDD_ECOR);
-	ACECorpusFolder = ENGLISH_CORPUS_FOLDER;
 #endif
 
 	m_sheet.Show();
@@ -246,20 +236,10 @@ void CConsensus_Dlg::Notification_Input(const char* inputchar)
 		FileName += "Social_Analysis.paj";
 		AppCall::Consensus_Open_Process(FileName.c_str(), Pajet_Path);
 	}
-	if(!strcmp("000", inputchar)){
+	if(!strcmp("plt", inputchar)){
 		string FileName = ENET_FOLDER;
 		FileName += "PLT_Analysis_relation.paj";
 		AppCall::Consensus_Open_Process(FileName.c_str(), Pajet_Path);
-	}
-	if(!strcmp("out", inputchar)){
-		#ifdef CONSENSUS_CEDT
-			m_CCEDT_Dlg.m_CCEDT.m_CCRF.Collecting_CRF_n_Cross_Result_for_Inside_out_with_Erasing();
-		#endif
-	}
-	if(!strcmp("in", inputchar)){
-		#ifdef CONSENSUS_CEDT
-			m_CCEDT_Dlg.m_CCEDT.m_CCRF.Collecting_CRF_n_Cross_Result_for_Inside_in_with_Erasing();
-		#endif
 	}
 }
 
@@ -364,12 +344,6 @@ DWORD WINAPI Consensus_Responce_Threaad(LPVOID pParam)
 #ifdef CONSENSUS_CRDC
 		else if(dlgRef.m_CCRDC_Dlg.CRDC_Busy_Flag){
 			strcpy_s(OutputChar, MAX_SENTENCE, "CRDC is running...");
-		}
-#endif
-
-#ifdef CONSENSUS_ECOR
-		else if(dlgRef.m_ECOR_Dlg.ECOR_Busy_Flag){
-			strcpy_s(OutputChar, MAX_SENTENCE, "ECOR is running...");
 		}
 #endif
 

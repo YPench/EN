@@ -22,131 +22,39 @@
 #include "NECom.h"
 
 int FEEDBACK_CASES_NUM;
-int GREEDY_MATCH_NUM;
-
-
 double FEEDBACE_PRO_LIMIT;
 int CAND_FEEDBACK_NUM;
 int BOARD_n_GRAM_NUM;
-int INTERNAL_WORDS_NUM;
-int BOARD_POS_NUM;
-int BOARD_WORDS_NUM;
-
-int CRF_N_BEST_NUM;
-
-bool Greedy_Matching_Method_FLag;
-
-bool n_Cross_Flag;
-
-bool Collect_nCross_ACE_Evaluation_Flag;
-
-
 
 bool CEDT_Head_Flag;
 bool CEDT_Detection_Flag;
 bool CEDT_Extend_Done_Flag;
 bool CEDT_Head_Done_Flag;
-bool CEDT_Extra_ACE_NE_Flag;
-bool CEDT_R2L_or_L2R_Flag;
+
 bool CEDT_Head_Only_Flag;
 bool CEDT_Extend_Only_Flag;
-bool CEDT_Candit_POS_Flag;
 
-extern string Detect_Single_NE_TYPE;
-extern bool Collect_nGross_Boundary_Info;
-extern bool Collect_nGross_Candidate_Info;
-extern Maxen_Rtn_map P_G_nCrossRtn_m;
-extern Maxen_Rtn_map R_G_nCrossRtn_m;
+CCEDT::CCEDT(){
 
-bool CEDT_Segmenter_Candit_External_Words_Flag;
-bool CEDT_Segmenter_Candit_Internal_Words_Flag;
-bool CEDT_Candit_nG_Featrue_Flag;
-bool CEDT_Word_Boundary_Flag;
-
-bool CRF_Model_Flag;
-bool CRF_Max_Flag;
-bool CRF_Multi_TYPE_Flag;
-bool CRF_POS_Flag;
-bool CRF_Merging_Max_Min_Flag;
-bool CRF_DetBound_Flag;
-bool CRF_Candit_Gen_Flag;
-bool CRF_Mention_Detection_Flag;
-bool CEDT_MM_Feature_Flag;
-
-bool CRF_START_or_END_DetBound_Flag;
-bool START_Feedback_Ref_Flag;
-bool END_Feedback_Ref_Flag;
-bool CEDT_Internal_Sequence_Words_Flag;
-
-
-CCEDT::CCEDT()
-//: m_CNEFeator(m_CSegmter, m_CMaxmatch, Lexicon_s)
-//, m_CCRF(m_CSegmter, m_CMaxmatch, Lexicon_s)
-{
 	FEEDBACK_CASES_NUM = 2;
-	START_Feedback_Ref_Flag = true;
-	END_Feedback_Ref_Flag = true;
-
 	FEEDBACE_PRO_LIMIT = 0.0;
 	CAND_FEEDBACK_NUM = -1;
 	BOARD_n_GRAM_NUM = 2;
-	
-	BOARD_POS_NUM = 1;
-	BOARD_WORDS_NUM = 3;
-	INTERNAL_WORDS_NUM = -1;
 
 	m_CDetBound.pCCEDT = this;
 	m_CDetCandit.pCCEDT = this;
 	m_CDiscrimer.pCCEDT = this;
-	m_CAntical.pCCEDT = this;
-	m_CExtra.pCCEDT = this;
 
 	ACE_Corpus_Flag = false;
 	Model_Loaded_Flag = false;
 
 
-	//------------------------------------Extend or Head
+	//-----------------------------------Extend or Head
 	CEDT_Extend_Done_Flag = false;
 	CEDT_Head_Done_Flag = false;
 	CEDT_Head_Only_Flag = false;
-	CEDT_Extend_Only_Flag = true;
+	CEDT_Extend_Only_Flag = false;
 	CEDT_Head_Flag = false;
-	//-------------------------------------Cross
-	n_Cross_Flag = false;
-	Collect_nGross_Boundary_Info = false;
-	Collect_nGross_Candidate_Info = false;
-
-	Collect_nCross_ACE_Evaluation_Flag = false;
-	CEDT_Extra_ACE_NE_Flag = false;
-
-	//-------------------------------------CRF control
-	CRF_Model_Flag = false;
-	CRF_Merging_Max_Min_Flag = false;
-	CRF_POS_Flag = false;
-	CRF_Max_Flag = true;
-	CRF_Multi_TYPE_Flag = true;
-	CRF_DetBound_Flag = false;
-	CRF_Candit_Gen_Flag = false;
-
-	CRF_Mention_Detection_Flag = false;
-	CRF_N_BEST_NUM = 1;
-	
-	//-------------------------------------Greedy_Matching
-	Greedy_Matching_Method_FLag = true;
-	CEDT_R2L_or_L2R_Flag = false;
-	GREEDY_MATCH_NUM = 3;
-	
-	//-------------------------------------Feature set
-	CEDT_MM_Feature_Flag = true;
-	CEDT_Candit_POS_Flag = false;
-	CEDT_Segmenter_Candit_Internal_Words_Flag = true;
-	CEDT_Segmenter_Candit_External_Words_Flag = true;
-	CEDT_Candit_nG_Featrue_Flag = true;
-	CEDT_Internal_Sequence_Words_Flag = false;
-
-	CEDT_Word_Boundary_Flag = false;
-
-	Detect_Single_NE_TYPE = "";
 
 	m_Modelspace = DATA_FOLDER;
 	m_Modelspace += "CEDT\\Model\\";
@@ -158,61 +66,12 @@ CCEDT::CCEDT()
 		_mkdir(m_Modelspace.c_str());
 	}
 
-
-}
-CCEDT::~CCEDT(){
-	if(!n_CrossDismCase_v.empty()){
-		for(size_t i = 0; i < n_CrossDismCase_v.size(); i++){
-			if(n_CrossDismCase_v[i]->Head_Held_Flag){
-				delete n_CrossDismCase_v[i]->pHead;
-			}
-			if(n_CrossDismCase_v[i]->Extend_Held_Flag){
-				delete n_CrossDismCase_v[i]->pExtend;
-			}
-			delete n_CrossDismCase_v[i];
-		}
-	}
-	if(n_CrossSurround_v.empty()){
-		for(size_t i = 0; i < n_CrossSurround_v.size(); i++){
-			delete n_CrossSurround_v[i];
-		}
-	}
-}
-void CCEDT::Init_CCEDT()
-{
-	Reset_CEDT_Memories();
-	if(!n_CrossDismCase_v.empty()){
-		for(size_t i = 0; i < n_CrossDismCase_v.size(); i++){
-			if(n_CrossDismCase_v[i]->Head_Held_Flag){
-				delete n_CrossDismCase_v[i]->pHead;
-			}
-			if(n_CrossDismCase_v[i]->Extend_Held_Flag){
-				delete n_CrossDismCase_v[i]->pExtend;
-			}
-			delete n_CrossDismCase_v[i];
-		}
-	}
-	if(n_CrossSurround_v.empty()){
-		for(size_t i = 0; i < n_CrossSurround_v.size(); i++){
-			delete n_CrossSurround_v[i];
-		}
-	}
 	SegChar_s.insert("¡£");SegChar_s.insert("£»");SegChar_s.insert("£¿");SegChar_s.insert("£¡");SegChar_s.insert("£¬");
 	SegChar_s.insert("\t");SegChar_s.insert(";");SegChar_s.insert("?");SegChar_s.insert("!");SegChar_s.insert(",");//SegChar_s.insert(".");
-
-	//Extract_Location_Name();
-	string LexiconPath = DATA_FOLDER;
-	if(CRF_Model_Flag){
-		NLPOP::LoadWordsStringSet(LexiconPath+"Surname.dat", m_CCRF.Surname_s);
-		NLPOP::LoadWordsStringSet(LexiconPath+"LocalName.dat", m_CCRF.Locname_s);
-		NLPOP::LoadWordsStringSet(LexiconPath+"Pronoun.dat", m_CCRF.Pronoun_s);
-		NLPOP::Converting_strng_set_into_2Gram_set(m_CCRF.Locname_s);
-	}
-	NLPOP::LoadWordsStringSet(LexiconPath+"Surname.dat", m_CNEFeator.Surname_s);
-	NLPOP::LoadWordsStringSet(LexiconPath+"LocalName.dat", m_CNEFeator.Locname_s);
-	NLPOP::LoadWordsStringSet(LexiconPath+"Pronoun.dat", m_CNEFeator.Pronoun_s);
-	NLPOP::Converting_strng_set_into_2Gram_set(m_CNEFeator.Locname_s);
 }
+CCEDT::~CCEDT(){
+}
+
 void CCEDT::Named_Entity_Training_or_Testing(vector<NE_Surround*>& training_Surround_v, vector<NE_Surround*>& testing_Surround_v)
 {
 	if(training_Surround_v.empty() && !testing_Surround_v.empty()){
@@ -226,108 +85,39 @@ void CCEDT::Named_Entity_Training_or_Testing(vector<NE_Surround*>& training_Surr
 		AppCall::Maxen_Responce_Message(AppCall::Subsection_Responce_Message_Memo("Extend Detection").c_str());
 		CEDT_Head_Flag = false;
 		CEDT_Detection_Flag = true;
-		//Collect_nGross_Candidate_Info = true;
 
 		m_TrainingCEDTInfo.FREE();
 		m_TestingCEDTInfo.FREE();
 
-		if(!CRF_DetBound_Flag){
-			m_CDetBound.START_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
-			m_CDetBound.END_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
-		}
-		else{
-			m_CCRF.CRF_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v, m_TrainingCEDTInfo, m_TestingCEDTInfo);
-		}
+		m_CDetBound.START_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
+		m_CDetBound.END_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
+	
 		
-		if(!Greedy_Matching_Method_FLag){
-			m_CDetCandit.Candidate_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
-		}
-		else{
-			//m_CDetCandit.Testing_Named_Entity_Candidates_By_Greedy_Matching(testing_Surround_v, m_TestingCEDTInfo);
-			m_CDetCandit.Candidate_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
-		}
+		m_CDetCandit.Candidate_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
+	
 		CEDT_Extend_Done_Flag = true;
 	}
 	
 	//=================================Head Detection
-	if(CRF_Mention_Detection_Flag){
+	if(!CEDT_Extend_Only_Flag){
 		AppCall::Maxen_Responce_Message(AppCall::Subsection_Responce_Message_Memo("Head Detection").c_str());
 		CEDT_Head_Flag = true;//---------------------
 		CEDT_Detection_Flag = true;
 		m_TrainingCEDTInfo.FREE();
 
-		//m_CCRF.CRF_Generate_Routine_and_Reverse_Sequence_Candit_Port(training_Surround_v, testing_Surround_v, m_TrainingCEDTInfo, m_TestingCEDTInfo);
-		//CRF_Max_Flag = true;
-		//m_CCRF.CRF_Generate_nBest_Candit_Port(training_Surround_v, testing_Surround_v, m_TrainingCEDTInfo, m_TestingCEDTInfo);
-		
-		CRF_Max_Flag = false;
-		m_CCRF.CRF_Generate_nBest_Candit_Port(training_Surround_v, testing_Surround_v, m_TrainingCEDTInfo, m_TestingCEDTInfo);
+		m_CDetBound.START_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
+		m_CDetBound.END_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
+		m_CDetCandit.Candidate_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
 
-		CEDT_Head_Done_Flag = true;
-	}
-	else if(!CEDT_Extend_Only_Flag){
-		AppCall::Maxen_Responce_Message(AppCall::Subsection_Responce_Message_Memo("Head Detection").c_str());
-		CEDT_Head_Flag = true;//---------------------
-		CEDT_Detection_Flag = false;
-		m_TrainingCEDTInfo.FREE();
-
-		if(!CRF_DetBound_Flag){
-			m_CDetBound.START_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
-			m_CDetBound.END_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
-		}
-		else{
-			m_CCRF.CRF_Boundary_Training_and_Testing_Port(training_Surround_v, testing_Surround_v, m_TrainingCEDTInfo, m_TestingCEDTInfo);
-		}
-		CRF_Candit_Gen_Flag = false;//True disable Candit generating, and collect n-Best Candit;
-		
-		if(CRF_Candit_Gen_Flag){
-			//m_CCRF.CRF_Generate_Routine_and_Reverse_Sequence_Candit_Port(training_Surround_v, testing_Surround_v, m_TrainingCEDTInfo, m_TestingCEDTInfo);
-			CRF_Max_Flag = true;
-			m_CCRF.CRF_Generate_nBest_Candit_Port(training_Surround_v, testing_Surround_v, m_TrainingCEDTInfo, m_TestingCEDTInfo);
-			CRF_Max_Flag = false;
-			m_CCRF.CRF_Generate_nBest_Candit_Port(training_Surround_v, testing_Surround_v, m_TrainingCEDTInfo, m_TestingCEDTInfo);
-		}
-		if(!Greedy_Matching_Method_FLag){
-			m_CDetCandit.Candidate_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
-		}
-		else{
-			m_CDetCandit.Testing_Named_Entity_Candidates_By_Greedy_Matching(testing_Surround_v, m_TestingCEDTInfo);
-		}
 		CEDT_Head_Done_Flag = true;
 	}
 
 	AppCall::Maxen_Responce_Message(AppCall::Subsection_Responce_Message_Memo("Entity Recognition").c_str());
 
-	CEDT_Detection_Flag = true; //---true, the positive and negative cases are divided, no discrimer distinguishes between different TYPE;
-	//Greedy_Matching_Method_FLag = false;
-	if(Detect_Single_NE_TYPE.length() == 0){
-		m_CDiscrimer.Discrimer_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
-		m_CAntical.Analysizing_Performance_Evaluation_on_Mention(testing_Surround_v, m_TestingCEDTInfo.DismCase_v, P_nCrossRtn_m, R_nCrossRtn_m);
-	}
-	else{
-		m_CAntical.Candidates_Performance_Analysis_Single_Extend_or_Head_Mention(testing_Surround_v,  CEDT_Head_Flag, P_nCrossRtn_m, R_nCrossRtn_m);
-	}
+	CEDT_Detection_Flag = false; //---true, the positive and negative cases are divided, no discrimer distinguishes between different TYPE;
 
-	if(CEDT_Extra_ACE_NE_Flag){
-		m_CExtra.ACE_Extra_Information_Extraction_Port(m_TrainingCEDTInfo.DismCase_v, m_TestingCEDTInfo.DismCase_v);
-	}
-	if(!Collect_nCross_ACE_Evaluation_Flag && CEDT_Extend_Done_Flag && CEDT_Head_Done_Flag){
-		m_CAntical.ACE_Named_Entity_Recognition_Evaluation_Port(testing_Surround_v, m_TestingCEDTInfo.DismCase_v);
-	}
-	else if(CEDT_Extend_Done_Flag && CEDT_Head_Done_Flag){
-		vector<DismCase*>& loc_Dism_v = m_TestingCEDTInfo.DismCase_v;
-		for(size_t i = 0; i < loc_Dism_v.size(); i++){
-			n_CrossDismCase_v.push_back(loc_Dism_v[i]);
-		}
-		loc_Dism_v.clear();
-		m_TestingCEDTInfo.CanditHead_v.clear();
-		m_TestingCEDTInfo.CanditExtend_v.clear();
-		vector<NE_Surround*>& loc_NE_Surround_v = testing_Surround_v;
-		for(size_t i = 0; i < loc_NE_Surround_v.size(); i++){
-			n_CrossSurround_v.push_back(loc_NE_Surround_v[i]);
-		}
-		loc_NE_Surround_v.clear();
-	}
+	m_CDiscrimer.Discrimer_Training_and_Testing_Port(training_Surround_v, testing_Surround_v);
+
 	m_TrainingCEDTInfo.FREE();
 	m_TestingCEDTInfo.FREE();
 }
@@ -337,7 +127,7 @@ void CCEDT::ACE_Corpus_Training_and_Testing_Port(const char* NE_Cases_Path, ACE_
 	CTime StartTime;
 	StartTime = CTime::GetCurrentTime();
 
-	Init_CCEDT();
+	Reset_CEDT_Memories();
 
 	ACE_Corpus_Flag = true;
 	vector<string> Doc_v;
@@ -373,63 +163,20 @@ void CCEDT::ACE_Corpus_Training_and_Testing_Port(const char* NE_Cases_Path, ACE_
 		}
 		Reset_CEDT_Memories();
 		m_CNEFeator.Init_Named_Entity_Featrue_Extractor(DATA_FOLDER);
-
-		//NECOM::Corpus_Entity_and_Entity_Mention_Information(pmACE_Corpus.ACE_Entity_Info_map);
 		
 		NECOM::Extracting_Named_Entity_Surrounding(training_sgm, pmACE_Corpus.ACE_Entity_Info_map, training_Surround_v, TrainingSentID);	
-		NECOM::NE_Surround_Consistence_Check(training_Surround_v, pmACE_Corpus, true);
 		NECOM::NE_Surround_Relative_Position_Calculate(training_Surround_v);
-		NECOM::NE_Surround_Consistence_Check(training_Surround_v, pmACE_Corpus, false);
 					
 		NECOM::Extracting_Named_Entity_Surrounding(testing_sgm, pmACE_Corpus.ACE_Entity_Info_map, testing_Surround_v, TestingSentID);	
-		NECOM::NE_Surround_Consistence_Check(testing_Surround_v, pmACE_Corpus, true);
 		NECOM::NE_Surround_Relative_Position_Calculate(testing_Surround_v);
-		NECOM::NE_Surround_Consistence_Check(testing_Surround_v, pmACE_Corpus, false);
-
-		//m_CNEFeator.Adding_Entity_Extent_and_Head_to_Lexicon(training_Surround_v, 'H');//"E,H,A"
 		
-		//m_CAntical.Corpus_Entity_and_Entity_Mention_Information(training_Surround_v, false);
-		//m_CAntical.Corpus_Entity_and_Entity_Mention_Information(testing_Surround_v, true);
-
-		if(CRF_Model_Flag){
-			m_CCRF.Consensus_CRF_Port(training_Surround_v, testing_Surround_v);//57% 62% 60%
-		}
-		else{
-			Named_Entity_Training_or_Testing(training_Surround_v, testing_Surround_v);
-		}
+		Named_Entity_Training_or_Testing(training_Surround_v, testing_Surround_v);
+	
 		Reset_CEDT_Memories();
-
-		//if(!n_Cross_Flag){
-		//	break;
-		//}
-	}
-	if((Collect_nGross_Boundary_Info || Collect_nGross_Candidate_Info) && !CRF_Model_Flag){
-		if(CRF_Mention_Detection_Flag){
-			MAXEN::Display_Performance_for_MAXEN(true, true, m_CCRF.ProcesedCasesInfor_m, m_CCRF.ProcesedCasesInfor_m, "\n****************************************\n\nThe Final Collected Cases Info...\n");
-		}
-		else{
-			MAXEN::Display_Performance_for_MAXEN(true, true, m_CDetCandit.ProcesedCasesInfor_m, m_CDetCandit.ProcesedCasesInfor_m, "\n****************************************\n\nThe Final Collected Cases Info...\n");
-		}
-		MAXEN::Display_Performance_for_MAXEN(true, true, P_G_nCrossRtn_m, R_G_nCrossRtn_m, "\n****************************************\n\nThe Final Candidate Performance...\n");
-		return;
-	}
-	if(CRF_Model_Flag){
-		if(CRF_Multi_TYPE_Flag){
-			m_CCRF.Output_CRF_n_Cross_Result_for_Inside_out_in_with_Erasing();
-		}
-		if(CRF_Merging_Max_Min_Flag){
-			CEDT_Head_Flag = true;
-			m_CCRF.Output_Global_CRF_Results_with_Erasing();
-		}
-		MAXEN::Display_Performance_for_MAXEN(true, true, m_CCRF.P_nCrossRtn_m, m_CCRF.R_nCrossRtn_m, "\n****************************************\n\nThe Final CRF n Cross Performance...\n");
-		return;
+		break;
 	}
 
 	MAXEN::Display_Performance_for_MAXEN(true, true, P_nCrossRtn_m, R_nCrossRtn_m, "\n****************************************\n\nThe Final n Cross Performance...\n");
-
-	if(CEDT_Extra_ACE_NE_Flag && Collect_nCross_ACE_Evaluation_Flag){
-		m_CAntical.ACE_Named_Entity_Recognition_Evaluation_Port(n_CrossSurround_v,n_CrossDismCase_v);
-	}
 
 	AppCall::Maxen_Responce_Message(AppCall::Subsection_Responce_Message_Memo("Recognition task terminates nommonly...").c_str());
 
@@ -476,7 +223,7 @@ void CCEDT::Testing_Models_by_Cases(const char* NE_Cases_Path)
 void CCEDT::Loading_Named_Entity_Models()
 {
 	if(!Model_Loaded_Flag){
-		Init_CCEDT();
+		Reset_CEDT_Memories();
 		bool Loaded_Flag = true;
 		CEDT_Head_Flag = false;
 		CEDT_Detection_Flag = true;

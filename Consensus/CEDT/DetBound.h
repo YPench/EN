@@ -42,11 +42,13 @@ public:
 	//========================================
 	void Training_START_or_END_Boundary(bool START_Flag, vector<NE_Surround*>& training_Surround_v, MaxentModel& pm_maxent, CEDTInfo& pmTrainingCEDTInfo);
 	void Testing_START_or_END_Boundary(bool START_Flag, vector<NE_Surround*>& testing_Surround_v, MaxentModel& pm_maxent, CEDTInfo& pmTestingCEDTInfo);
-	void Generate_START_or_END_Cases_Feature(bool START_Flag, vector<BoundCase*>& START_BoundCase_v, FeatureVctor& Training_v);
+	
 
 	//========================================
 	void Gen_END_Boundary_Cases(vector<NE_Surround*>& Surround_v, vector<BoundCase*>& END_BoundCase_v);
 	void Gen_START_Boundary_Cases(vector<NE_Surround*>& Surround_v, vector<BoundCase*>& START_BoundCase_v);
 	void Gen_START_Boundary_Cases(const char* inputchar, vector<BoundCase*>& START_BoundCase_v, size_t SENID);
 	void Gen_END_Boundary_Cases(const char* inputchar, vector<BoundCase*>& END_BoundCase_v, size_t SENID);
+
+	void Init_START_or_END_Rtn_map_with_Erasing(vector<BoundCase*>& BoundCase_v, map<size_t, map<size_t, double>*>& rtn_mm);
 };

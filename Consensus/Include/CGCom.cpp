@@ -21,13 +21,6 @@
 #include "..\\Consensus.h"
 #include "ConvertUTF.h"
 
-
-string Detect_Single_NE_TYPE;
-bool Collect_nGross_Boundary_Info;
-bool Collect_nGross_Candidate_Info;
-map<string, pair<size_t, size_t>> P_G_nCrossRtn_m;
-map<string, pair<size_t, size_t>> R_G_nCrossRtn_m;
-
 extern void STeller_Responce_Message(const char* poutstr);
 extern void STeller_Responce_Message_with_Save(const char* poutstr);
 

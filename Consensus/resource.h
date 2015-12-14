@@ -13,7 +13,6 @@
 #define IDD_CDOC                        132
 #define IDD_SELLER_DIALOG               134
 #define IDR_CRDC_INPUT_MENU             136
-#define IDD_ECOR                        138
 #define IDR_241                         143
 #define IDD_DOC_EVENT_REVIEWER          145
 #define IDD_ANALYZER                    146
@@ -167,18 +166,8 @@
 #define IDC_REDIT_ARG2                  1101
 #define IDC_CRDC_DEL                    1102
 #define IDC_CRDC_RUN                    1103
-#define IDC_ECOR_TRAIN_TEST             1104
-#define IDC_ECOR_N_CROSS                1105
-#define IDC_ECOR_STANFORD_PARSING       1106
-#define IDC_RICHEDIT_ECOR_ITE           1107
-#define IDC_ECOR_LOAD_CANDIT            1108
-#define IDC_ECOR_UPDATE_CANDIT          1109
-#define IDC_ECOR_PS_A_LOA               1110
-#define IDC_CEOR_PS_UPDATE              1111
-#define IDC_ECOR_PARTING                1112
 #define IDC_CRDC_COLLECT_PAR            1112
 #define IDC_ECOR_UPDATE_CANDIT2         1113
-#define IDC_ECOR_SAVE_TESTED            1113
 #define IDC_CRDC_OUTPUT_SVM             1113
 #define IDC_CDOC_                       1114
 #define IDC_CDOC_SPARSING               1114
